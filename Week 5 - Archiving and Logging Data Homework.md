@@ -1,0 +1,256 @@
+# Week 5 - Archiving and Logging Data Homework
+---
+
+### `tar`: Create, extract, compress, and manage tar backup archives
+
+Command to **extract** the `TarDocs.tar` archive to the current directory:
+
+```bash
+tar xvf TarDocs.tar
+```
+
+Command to **create** the `Javaless_Doc.tar` archive from the `TarDocs/` directory, while excluding the `TarDocs/Documents/Java` directroy:
+
+```bash
+tar cvvf Javaless_Docs.tar --exclude "Documents/Java" Documents/
+```
+
+Ensuring `Java/` is not in the new `Javaless_Docs.tar` archive:
+
+```bash
+tar tvvf Javaless_Docs.tar| grep -i java
+```
+
+**Bonus:** Command to create an incremental archive called `logs_backup_tar.gz` with only changed files to `snapshot.file` for the `/var/log` directory.
+
+```bash
+sudo tar cvvWf logs_backup.tar.gz --listed-incremental=snapshot.file --level 0 /log
+```
+
+#### `tar` Critical Thinking
+
+Why wouldn't you use the options `-x` and `-c` at the same with `tar`?
+
+Because '-c' means create a tar archive and '-x' means to execute it so they're contradicting.
+
+---
+
+### `cron`: Create, manage and automate various cron jobs
+
+Cron job for backing up the `/var/log/auth.log` file:
+
+```bash
+0 6 * * 3 tar cvzf /auth_backup.tgz /var/log/auth.log
+```
+
+---
+
+### `bash scripting`: Write basic bash scripts
+
+Brace expansion command to create the four subdirectories:
+
+```bash
+sudo mkdir /var/backups/{freemen,diskuse,openlist,freedisk}
+```
+
+Command and file edit to create `system.sh` (you can copy and paste it here):
+
+```bash
+touch system.sh && nano system.sh
+```
+
+- Within the script, have the following:
+
+```bash
+    #!/bin/bash
+    free -h >> /var/backups/freemem/free_mem.txt
+    du -h >> /var/backups/diskuse/disk_usage.txt
+    lsof >> /var/backups/openlist/open_list.txt
+    df -h >> /var/backups/freedisk/free_disk.txt
+```
+
+Command to make the `system.sh` script executable:
+
+```bash
+chmod u+x system.sh
+```
+
+Commands to to confirm script's execution:
+
+```bash
+cat /var/backups/freemem/free_mem.txt
+
+cat /var/backups/diskuse/disk_usage.txt
+
+cat /var/backups/openlist/open_list.txt
+
+cat /var/backups/freedisk/free_disk.txt
+```
+
+Command to copy `system.sh` to system-wide cron directory:
+
+```bash
+sudo crontab -e
+@weekly /home/sysadmin/system.sh
+```
+
+---
+
+### `journalctl`: Perform various log filtering techniques
+
+Command to return `journalctl` messages with priorities from emergency to error:
+
+```bash
+journalctl -p "emerg".."err" -b -0
+```
+
+Command to return `systemd-journald` messages:
+
+```bash
+sudo journalctl -u systemd-journald -b -0
+```
+
+Comand to prune archived journal files except the most recent 2:
+
+```bash
+sudo journalctl --vacuum-files=2
+```
+
+**Bonus** Command to filter all log messages with priority levels between 0 and 2, output to `/home/sysadmin/Priority_High.txt`
+
+```bash
+journalctl -p 0..2 >> /home/sysadmin/Priority_High.txt
+```
+
+**Bonus 2** Command and file edit to automate the last command in a daily cronjob:
+
+```bash
+sudo crontab -e
+```
+
+- Within the `crontab` file, add the following:
+
+```bash
+@daily sudo journalctl -p 0..2 >> /home/sysadmin/Priority_High.txt
+```
+
+---
+
+### `rsyslog`: Priority based log file creation
+
+Command and file edit to record all `mail` log messages, except for `debug` to `/var/log/mail.log`:
+
+```bash
+sudo nano /etc/rsyslog.d/50-default.conf
+```
+
+- Add within the configuration file:
+
+```bash
+mail.!debug         -/var/log/mail.log
+```
+
+Command and file edit to record all `boot` log messages, except for `info` and `debug` to `/var/log/boot.log`:
+
+```bash
+sudo nano /etc/rsyslog.d/50-default.conf
+```
+
+- Add within the configuration file:
+
+```bash
+local7.!info,!debug     /var/log/boot.log
+```
+
+---
+
+### `logrotate`: Manage log file sizes
+
+Command and file edit that backs up authentication messages to `/var/log/auth.log`:
+
+- Run `sudo nano /etc/logrotate.conf` to edit the `logrotate` configuration file.
+
+- Add within the configuration file:
+
+```bash
+    /var/log/auth.log {
+        missingok
+        weekly
+        rotate 7
+        notifempty
+        delaycompress
+        endscript
+    }
+```
+
+---
+
+### BONUS ACTIVITY `auditd`: Check for policy and file violations.
+
+Command to verify `auditd` is active:
+
+```bash
+systemctl status auditd
+```
+
+Command and file edit to set number of retained logs and maximum log file size:
+
+```bash
+sudo nano /etc/audit/auditd.conf
+```
+
+- Add within the configuration file:
+
+```bash
+    num_logs = 7
+    max_log_file = 35
+```
+
+Command and file edit using `auditd` itself to set rules for `/etc/shadow`, `/etc/passwd` and `/var/log/auth.log`:
+
+```bash
+sudo nano /etc/audit/rules.d/audit.rules
+```
+
+- Add within the `rules` file:
+
+```bash
+    -w /etc/shadow -p raw -k hashpass_audit
+    -w /etc/passwd -p rwa -k userpass_audit
+    -w /var/log/auth.log -p rwa -k authlog_audit    
+```
+
+Command to restart `auditd`:
+
+```bash
+sudo systemctl restart auditd
+```
+
+Command to list all `auditd` rules:
+
+```bash
+sudo auditctl -l
+```
+
+Command to produce an audit report:
+
+```bash
+sudo aureport -au    #for user authentications
+sudo aureport -m     #for modifications
+```
+
+Command to use `auditd` to watch `/var/log/cron`:
+
+```bash
+sudo auditctl -w /var/log/cron
+```
+
+Command to re-verify `auditd` rules:
+
+```bash
+sudo auditctl -l
+-w /var/log/cron -p rwxa   #verified that input was correct
+```
+
+---
+© 2020 Trilogy Education Services, a 2U, Inc. brand. All Rights Reserved.
