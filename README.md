@@ -3,3 +3,6 @@ This is an overview of all of the hands-on projects and assignments I have compl
 - Intro to Terminal Bash (Linux)
 - Linux Systems Administration (Linux)
 - Archiving and Logging Data (Linux)
+- Advanced Bash (Linux)
+- Windows Admin and Hardening (Windows)
+- Networking Fundamentals (Linux and Wireshark)
