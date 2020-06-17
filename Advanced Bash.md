@@ -1,4 +1,4 @@
-## Week 6 - Advanced Bash Homework
+## Week 6 - Advanced Bash 
 
 Create a secret user named `sysd`. Make sure this user doesn't have a home folder created.
 ```bash
