@@ -6,3 +6,4 @@ This is an overview of all of the hands-on projects and assignments I have compl
 - Advanced Bash (Linux)
 - Windows Admin and Hardening (Windows)
 - Networking Fundamentals (Linux and Wireshark)
+- Network Fundamentals II (nslookup, aircrack-ng)
