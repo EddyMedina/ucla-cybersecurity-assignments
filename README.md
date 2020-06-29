@@ -7,3 +7,4 @@ This is an overview of all of the hands-on projects and assignments I have compl
 - Windows Admin and Hardening (Windows)
 - Networking Fundamentals (Linux and Wireshark)
 - Network Fundamentals II (nslookup, aircrack-ng)
+- Cryptography (Encryption, Decryption, Caesar Cipher, Encoding and Decoding, Binary Symmetric and Asymmetric Encryption, Open SSL, Key/IV, Public/Private Keys, Key Distribution, Hashing, Hashing Algorithms, Hashcat, Steganography, Steghide)
